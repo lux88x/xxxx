@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff2') format('woff2'),
+           url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff') format('woff');
+      font-weight: normal;
+      font-style: normal;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white:   #f0f0f0;
+      --muted:   rgba(240,240,240,0.38);
+      --rule:    rgba(240,240,240,0.10);
+      --grid:    rgba(255,255,255,0.045);
+      --display: 'Coolvetica', 'Arial Black', sans-serif;
+      --sans:    'Inter', system-ui, sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      min-height: 100vh;
+      color: var(--white);
+      font-family: var(--sans);
+      font-size: 16px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      background-color: #0d0d0d;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(160deg, #111118 0%, #0d0d0d 40%, #12121f 100%);
+      background-size: 48px 48px, 48px 48px, 100% 100%;
+      background-position: center top, center top, 0 0;
+    }
+
+    header {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 80px 32px 52px;
+      border-bottom: 1px solid var(--rule);
+    }
+    .site-name {
+      font-family: var(--display);
+      font-weight: normal;
+      font-size: clamp(2.8rem, 7vw, 4.6rem);
+      letter-spacing: -0.01em;
+      line-height: 1;
+      color: var(--white);
+    }
+    .site-name span { opacity: 0.35; }
+
+    main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 0 32px 120px;
+    }
+    .label {
+      display: block;
+      margin-top: 60px;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .categories { list-style: none; }
+    .category-item { border-bottom: 1px solid var(--rule); }
+    .category-item:first-child { border-top: 1px solid var(--rule); margin-top: 22px; }
+    .category-link {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: 28px 0;
+      text-decoration: none;
+      color: var(--white);
+      gap: 24px;
+    }
+    .category-link:hover .cat-title { opacity: 0.6; }
+    .category-link:hover .cat-arrow { transform: translateX(6px); opacity: 0.6; }
+    .cat-left { display: flex; align-items: baseline; gap: 22px; }
+    .cat-title {
+      font-family: var(--display);
+      font-weight: normal;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      line-height: 1;
+      letter-spacing: -0.01em;
+      color: var(--white);
+      transition: opacity 0.2s ease;
+    }
+    .cat-desc { font-size: 0.78rem; color: var(--muted); display: none; }
+    @media (min-width: 540px) { .cat-desc { display: inline; } }
+    .cat-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    .cat-count { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+    .cat-arrow { font-size: 1rem; color: var(--muted); transition: transform 0.2s ease, opacity 0.2s ease; }
+
+    footer {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 32px 32px 48px;
+      border-top: 1px solid var(--rule);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+    .footer-name { font-family: var(--display); font-size: 1.1rem; color: var(--white); opacity: 0.7; }
+    .footer-copy { font-size: 0.74rem; color: var(--muted); }
+
+    @media (max-width: 480px) {
+      header, main, footer { padding-left: 20px; padding-right: 20px; }
+      header { padding-top: 52px; padding-bottom: 36px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .cat-arrow, .cat-title { transition: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1 class="site-name">X<span>.</span></h1>
+  </header>
+
+  <main>
+    <span class="label">Catégories</span>
+    <ul class="categories">
+      <li class="category-item">
+        <a href="#" class="category-link">
+          <span class="cat-left">
+            <span class="cat-title">Philosophie</span>
+            <span class="cat-desc">Existence, raison, langage</span>
+          </span>
+          <span class="cat-right">
+            <span class="cat-count" id="count-philosophie">0 article</span>
+            <span class="cat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <li class="category-item">
+        <a href="#" class="category-link">
+          <span class="cat-left">
+            <span class="cat-title">Psychologie</span>
+            <span class="cat-desc">Comportement, esprit, affect</span>
+          </span>
+          <span class="cat-right">
+            <span class="cat-count" id="count-psychologie">0 article</span>
+            <span class="cat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <li class="category-item">
+        <a href="#" class="category-link">
+          <span class="cat-left">
+            <span class="cat-title">Théologie</span>
+            <span class="cat-desc">Foi, sens, transcendance</span>
+          </span>
+          <span class="cat-right">
+            <span class="cat-count" id="count-theologie">0 article</span>
+            <span class="cat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <li class="category-item">
+        <a href="#" class="category-link">
+          <span class="cat-left">
+            <span class="cat-title">Sciences</span>
+            <span class="cat-desc">Méthode, nature, découverte</span>
+          </span>
+          <span class="cat-right">
+            <span class="cat-count" id="count-sciences">0 article</span>
+            <span class="cat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <li class="category-item">
+        <a href="#" class="category-link">
+          <span class="cat-left">
+            <span class="cat-title">IT</span>
+            <span class="cat-desc">Tech, code, systèmes</span>
+          </span>
+          <span class="cat-right">
+            <span class="cat-count" id="count-it">0 article</span>
+            <span class="cat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+    </ul>
+  </main>
+
+  <footer>
+    <span class="footer-name">X.</span>
+    <span class="footer-copy">2026 — tous droits réservés</span>
+  </footer>
+
+  <script>
+    const cats = ['philosophie','psychologie','theologie','sciences','it'];
+    cats.forEach(cat => {
+      const articles = JSON.parse(localStorage.getItem('articles_' + cat) || '[]');
+      const el = document.getElementById('count-' + cat);
+      if (el) {
+        const n = articles.length;
+        el.textContent = n + (n === 1 ? ' article' : ' articles');
+      }
+    });
+  </script>
+
+</body>
+</html>
