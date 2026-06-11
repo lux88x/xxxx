@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff2') format('woff2'),
+           url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff') format('woff');
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #f0f0f0; --muted: rgba(240,240,240,0.38);
+      --rule: rgba(240,240,240,0.10); --grid: rgba(255,255,255,0.045);
+      --display: 'Coolvetica','Arial Black',sans-serif; --sans: 'Inter',system-ui,sans-serif;
+    }
+    body {
+      min-height: 100vh; color: var(--white); font-family: var(--sans);
+      -webkit-font-smoothing: antialiased; background-color: #0d0d0d;
+      background-image: linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(160deg,#111118 0%,#0d0d0d 40%,#12121f 100%);
+      background-size: 48px 48px,48px 48px,100% 100%;
+    }
+    header { max-width: 860px; margin: 0 auto; padding: 52px 32px 36px; border-bottom: 1px solid var(--rule); display: flex; align-items: baseline; gap: 24px; }
+    .back { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--white); }
+    .site-name { font-family: var(--display); font-size: clamp(1.6rem,4vw,2.4rem); color: var(--white); }
+    .site-name span { opacity: 0.3; }
+    main { max-width: 860px; margin: 0 auto; padding: 0 32px 100px; }
+    .cat-heading { font-family: var(--display); font-size: clamp(2.4rem,6vw,3.8rem); margin-top: 52px; margin-bottom: 40px; color: var(--white); }
+    .articles-list { list-style: none; }
+    .article-row { border-bottom: 1px solid var(--rule); }
+    .article-row:first-child { border-top: 1px solid var(--rule); }
+    .article-link { display: flex; justify-content: space-between; align-items: baseline; padding: 24px 0; text-decoration: none; color: var(--white); gap: 20px; }
+    .article-link:hover .art-title { opacity: 0.6; }
+    .art-title { font-family: var(--display); font-size: clamp(1.3rem,3vw,2rem); transition: opacity 0.2s; }
+    .art-date { font-size: 0.75rem; color: var(--muted); flex-shrink: 0; }
+    .empty { color: var(--muted); padding: 40px 0; font-size: 0.9rem; }
+    footer { max-width:860px;margin:0 auto;padding:32px;border-top:1px solid var(--rule);font-size:0.74rem;color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="back">← X.</a>
+    <span class="site-name" id="cat-name"></span>
+  </header>
+  <main>
+    <h1 class="cat-heading" id="cat-heading"></h1>
+    <ul class="articles-list" id="articles-list">
+      <li style="color:var(--muted);padding:20px 0;font-size:0.85rem;">Chargement...</li>
+    </ul>
+  </main>
+  <footer>X. — 2026</footer>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient(
+      'https://grqekegolbyfetkwozmb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycWVrZWdvbGJ5ZmV0a3dvem1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDE4NTIsImV4cCI6MjA5Njc3Nzg1Mn0.uovx6O56Q0O6o70R5Cawc_oVnoauNY3myEpKLoZ_qug'
+    );
+    const labels = {philosophie:'Philosophie',psychologie:'Psychologie',theologie:'Théologie',sciences:'Sciences',it:'IT'};
+    const cat = new URLSearchParams(location.search).get('cat') || 'philosophie';
+    document.getElementById('cat-name').innerHTML = labels[cat] + '<span>.</span>';
+    document.getElementById('cat-heading').textContent = labels[cat];
+    document.title = labels[cat] + ' — X';
+
+    const { data, error } = await sb.from('articles').select('id,title,created_at').eq('category', cat).order('created_at', { ascending: false });
+    const list = document.getElementById('articles-list');
+    if (!data || data.length === 0) {
+      list.innerHTML = '<li class="empty">Aucun article pour l\'instant.</li>';
+    } else {
+      list.innerHTML = data.map(a => {
+        const date = new Date(a.created_at).toLocaleDateString('fr-FR');
+        return `<li class="article-row"><a href="article.html?id=${a.id}" class="article-link"><span class="art-title">${esc(a.title)}</span><span class="art-date">${date}</span></a></li>`;
+      }).join('');
+    }
+    function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+  </script>
+</body>
+</html>
