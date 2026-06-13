@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>X</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=Playfair+Display:wght@400;700&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Coolvetica';
+      src: url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff2') format('woff2'),
+           url('https://db.onlinewebfonts.com/t/c1cb5de10a43a01b1a40e86fdbba3b2e.woff') format('woff');
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #f0f0f0; --muted: rgba(240,240,240,0.38);
+      --rule: rgba(240,240,240,0.10); --grid: rgba(255,255,255,0.045);
+      --display: 'Coolvetica','Arial Black',sans-serif;
+      --serif: 'Playfair Display',Georgia,serif;
+      --sans: 'Inter',system-ui,sans-serif;
+    }
+    body {
+      min-height: 100vh; color: var(--white); font-family: var(--sans);
+      -webkit-font-smoothing: antialiased; background-color: #0d0d0d;
+      background-image: linear-gradient(var(--grid) 1px,transparent 1px),linear-gradient(90deg,var(--grid) 1px,transparent 1px),linear-gradient(160deg,#111118 0%,#0d0d0d 40%,#12121f 100%);
+      background-size: 48px 48px,48px 48px,100% 100%;
+    }
+    header { max-width: 720px; margin: 0 auto; padding: 48px 32px 32px; display: flex; align-items: baseline; gap: 20px; border-bottom: 1px solid var(--rule); }
+    .back { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--white); }
+    .site-name { font-family: var(--display); font-size: 1.5rem; color: var(--white); }
+    .site-name span { opacity: 0.3; }
+    main { max-width: 720px; margin: 0 auto; padding: 56px 32px 100px; }
+    .art-meta { font-size: 0.72rem; color: var(--muted); letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 20px; }
+    .art-title {
+      font-family: var(--display);
+      font-size: clamp(2rem, 5vw, 3rem);
+      font-weight: normal;
+      line-height: 1.1;
+      margin-bottom: 48px;
+      color: var(--white);
+    }
+    .art-body { font-size: 1.05rem; line-height: 1.85; color: rgba(240,240,240,0.82); }
+    .art-body p { margin-bottom: 20px; }
+    .art-body strong { color: var(--white); font-weight: 600; }
+    .art-body em { font-style: italic; color: rgba(240,240,240,0.65); }
+    .art-body h2 { font-family: var(--display); font-weight: normal; font-size: 1.6rem; color: var(--white); margin: 36px 0 14px; }
+    .art-body h3 { font-family: var(--display); font-weight: normal; font-size: 1.2rem; color: var(--white); margin: 28px 0 10px; }
+    .art-body blockquote { border-left: 2px solid rgba(255,255,255,0.2); padding-left: 20px; color: var(--muted); margin: 24px 0; font-style: italic; }
+    .art-body hr { border: none; border-top: 1px solid var(--rule); margin: 36px 0; }
+    .art-body ul { padding-left: 0; list-style: none; }
+    .art-body ul li { padding: 4px 0; }
+    .art-body ul li::before { content: '— '; opacity: 0.4; }
+    footer { max-width:720px;margin:0 auto;padding:32px;border-top:1px solid var(--rule);font-size:0.74rem;color:var(--muted); }
+  </style>
+</head>
+<body>
+  <header>
+    <a class="back" id="back-link" href="index.html">← X.</a>
+    <span class="site-name">X<span>.</span></span>
+  </header>
+  <main id="main-content">
+    <p style="color:var(--muted);font-size:0.85rem;">Chargement...</p>
+  </main>
+  <footer>X. — 2026</footer>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient(
+      'https://grqekegolbyfetkwozmb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycWVrZWdvbGJ5ZmV0a3dvem1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDE4NTIsImV4cCI6MjA5Njc3Nzg1Mn0.uovx6O56Q0O6o70R5Cawc_oVnoauNY3myEpKLoZ_qug'
+    );
+    const id = new URLSearchParams(location.search).get('id');
+    if (!id) { document.getElementById('main-content').innerHTML = '<p style="color:var(--muted)">Article introuvable.</p>'; }
+    else {
+      const { data } = await sb.from('articles').select('*').eq('id', id).single();
+      if (!data) { document.getElementById('main-content').innerHTML = '<p style="color:var(--muted)">Article introuvable.</p>'; }
+      else {
+        document.title = data.title + ' — X';
+        document.getElementById('back-link').href = 'categorie.html?cat=' + data.category;
+        const date = new Date(data.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
+        document.getElementById('main-content').innerHTML = `
+          <p class="art-meta">${data.category} · ${date}</p>
+          <h1 class="art-title">${esc(data.title)}</h1>
+          <div class="art-body">${renderMD(data.body)}</div>
+        `;
+      }
+    }
+    function esc(t) { return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function renderMD(text) {
+      if (!text) return '';
+      return text.split('\n').map(line => {
+        if (/^### (.+)/.test(line)) return `<h3>${inline(line.slice(4))}</h3>`;
+        if (/^## (.+)/.test(line))  return `<h2>${inline(line.slice(3))}</h2>`;
+        if (/^> (.+)/.test(line))   return `<blockquote>${inline(line.slice(2))}</blockquote>`;
+        if (/^---/.test(line))      return `<hr/>`;
+        if (/^- (.+)/.test(line))   return `<ul><li>${inline(line.slice(2))}</li></ul>`;
+        if (line.trim() === '')     return '';
+        return `<p>${inline(line)}</p>`;
+      }).join('');
+    }
+    function inline(t) {
+      return t
+        .replace(/!\[([^\]]*)\]\(([^)]+)\)/g, '<img src="$2" alt="$1" style="max-width:100%;border-radius:8px;margin:16px 0;display:block"/>')
+        .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+        .replace(/\*(.+?)\*/g,'<em>$1</em>');
+    }
+  </script>
+</body>
+</html>
