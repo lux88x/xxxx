@@ -199,7 +199,7 @@
       const { data } = await sb.from('articles').select('*').eq('id', id).single();
       if (!data) { document.getElementById('main-content').innerHTML = '<p style="color:var(--muted)">Article introuvable.</p>'; }
       else {
-        document.title = data.title + ' — X';
+        document.title = data.title + ' — x6k.';
         document.getElementById('back-link').href = 'categorie.html?cat=' + data.category;
         const date = new Date(data.created_at).toLocaleDateString('fr-FR', { year:'numeric', month:'long', day:'numeric' });
         document.getElementById('main-content').innerHTML = `
