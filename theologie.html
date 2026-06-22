@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Théologie — x6k.</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
+  <style>
+    @font-face {
+      font-family: 'Helvetica';
+      src: url('./fonts/Helvetica.ttf') format('truetype');
+      font-weight: normal;
+      font-style: normal;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --white: #f0f0f0;
+      --muted: rgba(240,240,240,0.38);
+      --rule: rgba(240,240,240,0.10);
+      --grid: rgba(255,255,255,0.045);
+      --display: 'Helvetica','Arial',sans-serif;
+      --sans: 'Inter', system-ui, sans-serif;
+    }
+    body {
+      min-height: 100vh; color: var(--white); font-family: var(--sans);
+      -webkit-font-smoothing: antialiased; background-color: #0d0d0d;
+      background-image:
+        linear-gradient(var(--grid) 1px, transparent 1px),
+        linear-gradient(90deg, var(--grid) 1px, transparent 1px),
+        linear-gradient(160deg, #111118 0%, #0d0d0d 40%, #12121f 100%);
+      background-size: 48px 48px, 48px 48px, 100% 100%;
+    }
+    header {
+      max-width: 860px; margin: 0 auto; padding: 52px 32px 36px;
+      border-bottom: 1px solid var(--rule);
+      display: flex; align-items: baseline; gap: 24px;
+    }
+    .back { font-size: 0.8rem; color: var(--muted); text-decoration: none; transition: color 0.2s; }
+    .back:hover { color: var(--white); }
+    .site-name { font-family: var(--display); font-size: clamp(1.6rem,4vw,2.4rem); color: var(--white); }
+    .site-name span { opacity: 0.3; }
+    main { max-width: 860px; margin: 0 auto; padding: 0 32px 100px; }
+    .cat-heading {
+      font-family: var(--display);
+      font-size: clamp(2.4rem,6vw,3.8rem);
+      margin-top: 52px; margin-bottom: 8px;
+      color: var(--white); font-weight: normal;
+    }
+    .cat-sub {
+      font-size: 0.75rem; color: var(--muted);
+      letter-spacing: 0.1em; text-transform: uppercase;
+      margin-bottom: 48px;
+    }
+    .label {
+      display: block; margin-bottom: 20px;
+      font-size: 0.7rem; font-weight: 500;
+      letter-spacing: 0.16em; text-transform: uppercase;
+      color: var(--muted);
+    }
+    .subcats { list-style: none; }
+    .subcat-item { border-bottom: 1px solid var(--rule); }
+    .subcat-item:first-child { border-top: 1px solid var(--rule); }
+    .subcat-link {
+      display: flex; align-items: baseline;
+      justify-content: space-between;
+      padding: 26px 0; text-decoration: none;
+      color: var(--white); gap: 24px;
+    }
+    .subcat-link:hover .subcat-title { opacity: 0.6; }
+    .subcat-link:hover .subcat-arrow { transform: translateX(6px); opacity: 0.6; }
+    .subcat-left { display: flex; align-items: baseline; gap: 20px; }
+    .subcat-title {
+      font-family: var(--display);
+      font-size: clamp(1.8rem, 4.5vw, 3rem);
+      font-weight: normal; line-height: 1;
+      color: var(--white); transition: opacity 0.2s ease;
+    }
+    .subcat-right { display: flex; align-items: center; gap: 16px; flex-shrink: 0; }
+    .subcat-count { font-size: 0.75rem; color: var(--muted); white-space: nowrap; }
+    .subcat-arrow { font-size: 1rem; color: var(--muted); transition: transform 0.2s ease, opacity 0.2s ease; }
+    footer { max-width: 860px; margin: 0 auto; padding: 32px; border-top: 1px solid var(--rule); font-size: 0.74rem; color: var(--muted); }
+    @media (max-width: 480px) {
+      header, main, footer { padding-left: 20px; padding-right: 20px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <a href="index.html" class="back">← x6k.</a>
+    <span class="site-name">x6k<span>.</span></span>
+  </header>
+  <main>
+    <h1 class="cat-heading">Théologie</h1>
+    <p class="cat-sub">Choisir une sous-catégorie</p>
+    <span class="label">Sous-catégories</span>
+    <ul class="subcats">
+      <li class="subcat-item">
+        <a href="categorie.html?cat=theologie&sub=islam" class="subcat-link">
+          <span class="subcat-left">
+            <span class="subcat-title">Islam</span>
+          </span>
+          <span class="subcat-right">
+            <span class="subcat-count" id="count-islam">—</span>
+            <span class="subcat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <li class="subcat-item">
+        <a href="categorie.html?cat=theologie&sub=christianisme" class="subcat-link">
+          <span class="subcat-left">
+            <span class="subcat-title">Christianisme</span>
+          </span>
+          <span class="subcat-right">
+            <span class="subcat-count" id="count-christianisme">—</span>
+            <span class="subcat-arrow">→</span>
+          </span>
+        </a>
+      </li>
+      <!-- Ajoute d'autres sous-catégories ici de la même façon -->
+    </ul>
+  </main>
+  <footer>x6k. — 2026</footer>
+  <script type="module">
+    import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+    const sb = createClient(
+      'https://grqekegolbyfetkwozmb.supabase.co',
+      'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdycWVrZWdvbGJ5ZmV0a3dvem1iIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODEyMDE4NTIsImV4cCI6MjA5Njc3Nzg1Mn0.uovx6O56Q0O6o70R5Cawc_oVnoauNY3myEpKLoZ_qug'
+    );
+    const subs = ['islam', 'christianisme'];
+    for (const sub of subs) {
+      const { count } = await sb.from('articles')
+        .select('*', { count: 'exact', head: true })
+        .eq('category', 'theologie')
+        .eq('subcategory', sub);
+      const el = document.getElementById('count-' + sub);
+      if (el) el.textContent = (count || 0) + (count === 1 ? ' article' : ' articles');
+    }
+  </script>
+</body>
+</html>
