@@ -1,0 +1,498 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Lloret de Mar — Le guide qui ne dort jamais</title>
+<link rel="icon" href="https://i.postimg.cc/DZJdZFmR/Nouveau-projet-(3)-(1).png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+  :root{
+    --blue-deep:#241866;
+    --violet:#5c22a6;
+    --red-sunset:#d92a5c;
+    --pink-glow:#ff6fa1;
+    --ink:#0d081a;
+    --cream:#fff4e8;
+    --gold:#ffbd5c;
+    --glass:rgba(20,10,35,.42);
+    --glass-border:rgba(255,255,255,.16);
+    --grad-angle:135deg;
+  }
+  body.night{
+    --blue-deep:#0b0620;
+    --violet:#2a1050;
+    --red-sunset:#4a1140;
+    --pink-glow:#7a2e63;
+    --gold:#ffd98a;
+  }
+  *{box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    margin:0;
+    font-family:'Inter',sans-serif;
+    color:var(--cream);
+    background:linear-gradient(var(--grad-angle), var(--blue-deep), var(--violet) 32%, var(--red-sunset) 68%, var(--pink-glow));
+    background-size:280% 280%;
+    animation:driftBg 22s ease-in-out infinite;
+    min-height:100vh;
+    overflow-x:hidden;
+    transition:background 1.2s ease;
+  }
+  @keyframes driftBg{
+    0%{background-position:0% 30%;}
+    50%{background-position:100% 70%;}
+    100%{background-position:0% 30%;}
+  }
+  h1,h2,h3,.display{font-family:'Unbounded',sans-serif;}
+  a{color:inherit;}
+  #palm-layer{
+    position:fixed; inset:0; width:100%; height:100%;
+    pointer-events:none; z-index:0; opacity:.16;
+    transition:opacity 1s ease;
+  }
+  body.night #palm-layer{opacity:.28;}
+  .wrap{position:relative; z-index:2; max-width:1180px; margin:0 auto; padding:0 24px;}
+
+  /* NAV */
+  nav{
+    position:sticky; top:0; z-index:50;
+    backdrop-filter:blur(14px);
+    background:rgba(13,8,26,.35);
+    border-bottom:1px solid var(--glass-border);
+  }
+  nav .wrap{display:flex; align-items:center; justify-content:space-between; padding:10px 24px; gap:16px;}
+  .logo-group{display:flex; align-items:center; gap:12px;}
+  .logo-group img{height:44px; width:auto; display:block; filter:drop-shadow(0 2px 10px rgba(0,0,0,.4));}
+  .logo-group span{font-family:'Unbounded'; font-weight:800; letter-spacing:.5px; font-size:1.05rem;}
+  nav ul{list-style:none; display:flex; gap:22px; margin:0; padding:0; font-size:.88rem; font-weight:600;}
+  nav ul a{text-decoration:none; opacity:.85; transition:opacity .2s;}
+  nav ul a:hover{opacity:1; color:var(--gold);}
+  nav ul{display:none;}
+  @media(min-width:820px){nav ul{display:flex;}}
+
+  /* TOGGLE JOUR/NUIT */
+  .daynight{display:flex; align-items:center; gap:8px; font-size:.78rem; font-weight:600;}
+  .switch{position:relative; width:52px; height:28px; border-radius:20px; background:rgba(255,255,255,.15); cursor:pointer; border:1px solid var(--glass-border);}
+  .switch::after{content:'☀️'; position:absolute; top:2px; left:3px; width:22px; height:22px; border-radius:50%; background:var(--gold); display:flex; align-items:center; justify-content:center; font-size:12px; transition:.3s ease;}
+  body.night .switch::after{content:'🌙'; transform:translateX(24px); background:#2a2350;}
+
+  /* HERO */
+  .hero{padding:70px 0 60px; text-align:center;}
+  .eyebrow{display:inline-block; padding:6px 16px; border-radius:30px; background:var(--glass); border:1px solid var(--glass-border); font-size:.78rem; letter-spacing:1.5px; text-transform:uppercase; margin-bottom:22px;}
+  .hero h1{font-size:clamp(2.4rem,6vw,4.6rem); line-height:1.02; margin:0 0 18px; font-weight:900; text-shadow:0 8px 40px rgba(0,0,0,.35);}
+  .hero h1 em{font-style:normal; background:linear-gradient(90deg,var(--gold),var(--pink-glow)); -webkit-background-clip:text; background-clip:text; color:transparent;}
+  .hero p.lead{max-width:620px; margin:0 auto 36px; font-size:1.08rem; opacity:.9; line-height:1.6;}
+  .hero-tag{font-size:.95rem; opacity:.75; font-style:italic; margin-top:-18px;}
+  .cta-row{display:flex; gap:14px; justify-content:center; flex-wrap:wrap; margin-top:10px;}
+  .btn{padding:13px 26px; border-radius:14px; text-decoration:none; font-weight:700; font-size:.92rem; transition:transform .2s ease, box-shadow .2s ease; display:inline-block;}
+  .btn-primary{background:linear-gradient(90deg,var(--gold),var(--pink-glow)); color:#22102a; box-shadow:0 10px 30px rgba(255,111,161,.35);}
+  .btn-ghost{border:1px solid var(--glass-border); background:var(--glass); color:var(--cream);}
+  .btn:hover{transform:translateY(-3px);}
+
+  /* SECTIONS */
+  section{padding:70px 0;}
+  .section-head{margin-bottom:36px; text-align:left;}
+  .section-head .kicker{font-size:.78rem; letter-spacing:2px; text-transform:uppercase; color:var(--gold); font-weight:700;}
+  .section-head h2{font-size:clamp(1.7rem,3.4vw,2.6rem); margin:8px 0 10px;}
+  .section-head p{opacity:.82; max-width:640px; line-height:1.6;}
+
+  .card{
+    background:var(--glass); border:1px solid var(--glass-border); border-radius:20px;
+    backdrop-filter:blur(10px); padding:22px;
+  }
+
+  /* MAP */
+  #map{height:520px; border-radius:22px; overflow:hidden; border:1px solid var(--glass-border); box-shadow:0 20px 60px rgba(0,0,0,.35);}
+  .legend{display:flex; flex-wrap:wrap; gap:14px; margin-top:18px; font-size:.85rem;}
+  .legend span{display:inline-flex; align-items:center; gap:7px; background:var(--glass); border:1px solid var(--glass-border); padding:6px 12px; border-radius:20px;}
+  .dot{width:11px; height:11px; border-radius:50%; display:inline-block;}
+
+  /* GRIDS */
+  .tabs{display:flex; gap:10px; margin-bottom:24px; flex-wrap:wrap;}
+  .tab-btn{background:var(--glass); border:1px solid var(--glass-border); color:var(--cream); padding:9px 18px; border-radius:30px; cursor:pointer; font-weight:600; font-size:.85rem; font-family:'Inter';}
+  .tab-btn.active{background:linear-gradient(90deg,var(--gold),var(--pink-glow)); color:#22102a;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:20px;}
+  .poi-card{transition:transform .25s ease, box-shadow .25s ease;}
+  .poi-card:hover{transform:translateY(-6px); box-shadow:0 18px 40px rgba(0,0,0,.35);}
+  .poi-top{display:flex; justify-content:space-between; align-items:flex-start; gap:10px; margin-bottom:8px;}
+  .poi-top h3{margin:0; font-size:1.08rem; font-family:'Inter'; font-weight:700;}
+  .rating{background:rgba(255,189,92,.18); color:var(--gold); font-weight:800; font-size:.85rem; padding:3px 9px; border-radius:8px; white-space:nowrap;}
+  .poi-card p{margin:4px 0; font-size:.88rem; opacity:.82; line-height:1.5;}
+  .tagrow{display:flex; gap:6px; flex-wrap:wrap; margin-top:10px;}
+  .tag{font-size:.72rem; background:rgba(255,255,255,.08); padding:4px 9px; border-radius:20px; opacity:.85;}
+  .pane{display:none;}
+  .pane.active{display:grid;}
+
+  /* TRANSPORT */
+  .route{position:relative; padding:20px 0;}
+  .route-line{position:absolute; top:38px; left:24px; right:24px; height:2px; background:linear-gradient(90deg,var(--gold),var(--pink-glow)); opacity:.5;}
+  .route-steps{display:flex; justify-content:space-between; gap:16px; flex-wrap:wrap; position:relative;}
+  .route-steps .stop{text-align:center; flex:1; min-width:110px;}
+  .stop .pin{width:20px; height:20px; border-radius:50%; background:var(--gold); margin:0 auto 10px; box-shadow:0 0 0 6px rgba(255,189,92,.18);}
+  .options{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:18px; margin-top:34px;}
+  .opt-card{position:relative; overflow:hidden;}
+  .opt-card .price{font-family:'Unbounded'; font-size:1.7rem; font-weight:800; color:var(--gold);}
+  .opt-card .badge{position:absolute; top:14px; right:14px; font-size:.68rem; background:linear-gradient(90deg,var(--gold),var(--pink-glow)); color:#22102a; padding:4px 10px; border-radius:20px; font-weight:800;}
+
+  /* ITINERAIRES */
+  .itin-tabs{display:flex; gap:10px; margin-bottom:26px; flex-wrap:wrap;}
+  .timeline{list-style:none; margin:0; padding:0; display:none;}
+  .timeline.active{display:block;}
+  .timeline li{display:flex; gap:18px; padding:16px 0; border-bottom:1px dashed var(--glass-border);}
+  .timeline li:last-child{border-bottom:none;}
+  .time{font-family:'Unbounded'; font-weight:700; color:var(--gold); min-width:64px; font-size:.9rem; padding-top:2px;}
+  .timeline h4{margin:0 0 4px; font-size:1rem;}
+  .timeline p{margin:0; font-size:.87rem; opacity:.82; line-height:1.5;}
+
+  /* TIPS */
+  .tips-grid{display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:18px;}
+  .tip{padding:20px;}
+  .tip .num{font-family:'Unbounded'; font-size:1.6rem; font-weight:900; color:var(--pink-glow); opacity:.7;}
+
+  footer{padding:50px 0 70px; text-align:center; font-size:.85rem; opacity:.7;}
+  footer a{text-decoration:underline;}
+
+  ::-webkit-scrollbar{width:10px;}
+  ::-webkit-scrollbar-thumb{background:linear-gradient(var(--gold),var(--pink-glow)); border-radius:10px;}
+
+  .leaflet-popup-content-wrapper{background:#1c1230; color:#fff4e8; border-radius:14px;}
+  .leaflet-popup-tip{background:#1c1230;}
+  .popup-title{font-weight:700; margin-bottom:2px;}
+  .popup-rating{color:#ffbd5c; font-weight:700; font-size:.85rem;}
+</style>
+</head>
+<body>
+
+<svg id="palm-layer" viewBox="0 0 1600 900" preserveAspectRatio="xMidYMax slice" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <g id="palm">
+      <path d="M0,300 C-6,230 -4,160 6,90 C8,70 -2,55 0,40" stroke="#000" stroke-width="9" fill="none" stroke-linecap="round"/>
+      <g fill="#000">
+        <path d="M2,42 C-40,10 -100,4 -150,28 C-100,34 -50,44 2,52 Z"/>
+        <path d="M2,42 C-30,-10 -80,-38 -140,-40 C-92,-6 -50,20 2,52 Z"/>
+        <path d="M2,42 C10,-14 30,-58 70,-90 C40,-40 20,-2 2,52 Z"/>
+        <path d="M2,42 C46,4 100,-6 150,14 C100,26 50,40 2,52 Z"/>
+        <path d="M2,42 C40,-20 78,-56 130,-68 C86,-28 48,4 2,52 Z"/>
+        <path d="M2,42 C-16,-24 -22,-64 -10,-104 C4,-58 6,-14 2,52 Z"/>
+      </g>
+    </g>
+  </defs>
+  <use href="#palm" transform="translate(60,900) scale(1.4)"/>
+  <use href="#palm" transform="translate(230,900) scale(0.9)"/>
+  <use href="#palm" transform="translate(430,900) scale(1.7)"/>
+  <use href="#palm" transform="translate(650,900) scale(1.1)"/>
+  <use href="#palm" transform="translate(880,900) scale(1.5)"/>
+  <use href="#palm" transform="translate(1080,900) scale(0.85)"/>
+  <use href="#palm" transform="translate(1280,900) scale(1.3)"/>
+  <use href="#palm" transform="translate(1480,900) scale(1.6)"/>
+  <use href="#palm" transform="translate(1580,900) scale(1.0)"/>
+  <use href="#palm" transform="translate(-40,900) scale(1.2)"/>
+</svg>
+
+<nav>
+  <div class="wrap">
+    <div class="logo-group">
+      <img src="https://i.postimg.cc/DZJdZFmR/Nouveau-projet-(3)-(1).png" alt="Logo Lloret de Mar">
+      <span>Lloret Vibes</span>
+    </div>
+    <ul>
+      <li><a href="#carte">Carte</a></li>
+      <li><a href="#hotels">Hôtels</a></li>
+      <li><a href="#restos">Restos</a></li>
+      <li><a href="#shopping">Shopping</a></li>
+      <li><a href="#transport">Aéroport</a></li>
+      <li><a href="#itineraires">Routines</a></li>
+      <li><a href="#astuces">Bons plans</a></li>
+    </ul>
+    <div class="daynight">
+      <span id="dn-label">Mode jour</span>
+      <div class="switch" id="dn-toggle"></div>
+    </div>
+  </div>
+</nav>
+
+<header class="hero">
+  <div class="wrap">
+    <span class="eyebrow">Costa Brava · Catalogne</span>
+    <h1>Lloret de Mar,<br><em>plage le jour, néon la nuit.</em></h1>
+    <p class="lead">Le guide complet pour transformer ton séjour en réussite totale : la carte des meilleures adresses, comment venir depuis Gérone sans se ruiner, et des routines de journée déjà prêtes à suivre.</p>
+    <div class="cta-row">
+      <a href="#carte" class="btn btn-primary">Ouvrir la carte interactive</a>
+      <a href="#transport" class="btn btn-ghost">Aéroport → Lloret, pas cher</a>
+    </div>
+    <p class="hero-tag" id="hero-tag">☀️ Bascule le switch en haut à droite pour voir Lloret s'éteindre en mode nuit.</p>
+  </div>
+</header>
+
+<section id="carte">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">01 · Orientation</span>
+      <h2>La carte interactive de Lloret</h2>
+      <p>Hôtels les mieux notés, hôtels les moins chers, meilleures tables, spots shopping et criques à ne pas louper : clique sur les points pour voir les notes réelles, adresses et téléphones.</p>
+    </div>
+    <div id="map"></div>
+    <div class="legend">
+      <span><i class="dot" style="background:#ffbd5c"></i> Hôtels haut de gamme</span>
+      <span><i class="dot" style="background:#5be0c5"></i> Hôtels petit budget</span>
+      <span><i class="dot" style="background:#ff6fa1"></i> Restaurants</span>
+      <span><i class="dot" style="background:#8e7bff"></i> Shopping</span>
+      <span><i class="dot" style="background:#4fb0ff"></i> Plages & criques</span>
+    </div>
+  </div>
+</section>
+
+<section id="hotels">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">02 · Dormir</span>
+      <h2>Où dormir : les mieux notés vs. les moins chers</h2>
+      <p>Deux sélections, un seul objectif : bien dormir sans forcément vider ton budget vacances.</p>
+    </div>
+    <div class="tabs">
+      <button class="tab-btn active" data-pane="hotel-top">🏆 Les mieux notés</button>
+      <button class="tab-btn" data-pane="hotel-cheap">💸 Les moins chers</button>
+    </div>
+    <div class="grid pane active" id="hotel-top">
+      <div class="card poi-card"><div class="poi-top"><h3>Hotel Delamar</h3><span class="rating">★4.7</span></div><p>Réservé aux adultes, rooftop avec 3 piscines et vue, buffet copieux, à 2 min de la plage et du shopping.</p><div class="tagrow"><span class="tag">Adults only</span><span class="tag">Rooftop</span><span class="tag">Centre</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>L'Azure Hotel</h3><span class="rating">★4.6</span></div><p>Service quasi 5 étoiles, spa, restaurant The Factory très apprécié, verre de cava offert à l'arrivée.</p><div class="tagrow"><span class="tag">Spa</span><span class="tag">4★ premium</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Rigat Park & Spa</h3><span class="rating">★4.4</span></div><p>Ancienne villa méditerranéenne posée directement sur la plage de Fenals, plus calme que le centre.</p><div class="tagrow"><span class="tag">Plage Fenals</span><span class="tag">Romantique</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>The 15th Boutique Hotel</h3><span class="rating">★4.5</span></div><p>Ambiance bohème-cosy, à 3 minutes à pied du centre, plus intime qu'un grand complexe.</p><div class="tagrow"><span class="tag">Boutique</span><span class="tag">Centre</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Santa Marta Hotel</h3><span class="rating">★4.4</span></div><p>5★ posé sur Santa Cristina, vues superbes, mais prévoir une voiture ou un taxi pour rejoindre le centre.</p><div class="tagrow"><span class="tag">Bord de mer</span><span class="tag">Voiture conseillée</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Belladora Hotel Boutique</h3><span class="rating">★5.0</span></div><p>Petit boutique-hôtel tout récent, propre, central, service très soigné — une pépite encore peu connue.</p><div class="tagrow"><span class="tag">Nouveau</span><span class="tag">Centre</span></div></div>
+    </div>
+    <div class="grid pane" id="hotel-cheap">
+      <div class="card poi-card"><div class="poi-top"><h3>Hotel htop Palm Beach & Spa</h3><span class="rating">★3.5</span></div><p>All inclusive à petit prix, buffet correct, ambiance jeune et animée, idéal petit budget assumé.</p><div class="tagrow"><span class="tag">All inclusive</span><span class="tag">Ambiance jeune</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Loft Hostal</h3><span class="rating">★3.6</span></div><p>Le moins cher du centre, à deux pas de la plage, des bars et des commerces. Confort simple, prix imbattable.</p><div class="tagrow"><span class="tag">Hostel</span><span class="tag">Petit budget</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Hotel Julimar</h3><span class="rating">★4.3</span></div><p>Excellent rapport qualité-prix, wifi fiable, parking disponible — rare et pratique pour cette gamme de prix.</p><div class="tagrow"><span class="tag">Parking</span><span class="tag">Bon rapport qualité-prix</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Camping Nice Camps</h3><span class="rating">★3.9</span></div><p>Bungalows et emplacements pour petits budgets ou vacances en van, plage à proximité, laverie sur place.</p><div class="tagrow"><span class="tag">Camping</span><span class="tag">Bungalows</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="restos">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">03 · Manger</span>
+      <h2>Les meilleures tables de Lloret</h2>
+      <p>Des adresses testées et approuvées par des centaines d'avis, du bord de mer aux petites tables locales.</p>
+    </div>
+    <div class="grid">
+      <div class="card poi-card"><div class="poi-top"><h3>Sant Elm Marisqueria</h3><span class="rating">★4.8</span></div><p>Fruits de mer face à la mer, oursins et paella pour deux qui font l'unanimité. La meilleure note de la ville.</p><div class="tagrow"><span class="tag">Fruits de mer</span><span class="tag">Vue mer</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Restaurant Al Freskito</h3><span class="rating">★4.7</span></div><p>Croquettes aux œufs de caille, bao au porc, paella généreuse : rapport qualité-prix redoutable.</p><div class="tagrow"><span class="tag">Tapas</span><span class="tag">Prix doux</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>La Parrilla</h3><span class="rating">★4.7</span></div><p>Grillades locales loin des pièges à touristes, pense à réserver car les tables partent vite.</p><div class="tagrow"><span class="tag">Grill</span><span class="tag">Adresse locale</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>La Terrassa del Bella</h3><span class="rating">★4.7</span></div><p>Tapas et burgers sur la Plaça Espanya, patatas bravas parmi les meilleures du centre, prix corrects.</p><div class="tagrow"><span class="tag">Tapas</span><span class="tag">Place centrale</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>La Brava Steakhouse</h3><span class="rating">★4.6</span></div><p>Le spot pour un vrai steak, tomahawk d'1kg très demandé, cocktails soignés, à réserver le week-end.</p><div class="tagrow"><span class="tag">Steakhouse</span><span class="tag">Soirée spéciale</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Ca l'Enric</h3><span class="rating">★4.6</span></div><p>Portions énormes pour un prix serré : poulet rôti et escalopes maison, idéal après une longue plage.</p><div class="tagrow"><span class="tag">Copieux</span><span class="tag">Petit prix</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="shopping">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">04 · Shopping</span>
+      <h2>Où faire ses courses et son shopping</h2>
+      <p>Du centre commercial pratique aux boutiques de mode et bazars pour souvenirs pas chers.</p>
+    </div>
+    <div class="grid">
+      <div class="card poi-card"><div class="poi-top"><h3>Centre commercial PortaLloret</h3><span class="rating">★4.1</span></div><p>Grand supermarché Esclat, Media Markt, animalerie et vêtements. 4h de parking gratuit, l'adresse pratique du quotidien.</p><div class="tagrow"><span class="tag">Supermarché</span><span class="tag">Parking gratuit</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Stradivarius</h3><span class="rating">★4.2</span></div><p>Mode femme accessible, en plein centre piéton, pratique pour compléter la valise en quelques minutes.</p><div class="tagrow"><span class="tag">Mode</span><span class="tag">Centre</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Asia Hiper Store</h3><span class="rating">★4.1</span></div><p>Bazar façon grand magasin asiatique : déco, souvenirs et petits objets pas chers, à négocier avec le sourire.</p><div class="tagrow"><span class="tag">Souvenirs</span><span class="tag">Bazar</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Noir et Blanc Compléments</h3><span class="rating">★4.1</span></div><p>Petite boutique de maroquinerie en cuir, sacs et ceintures, service attentionné selon les habitués.</p><div class="tagrow"><span class="tag">Maroquinerie</span><span class="tag">Boutique locale</span></div></div>
+      <div class="card poi-card"><div class="poi-top"><h3>Carabela Shopping Centre</h3><span class="rating">★3.7</span></div><p>Bien situé mais partiellement vide selon les derniers avis : à voir en passant plutôt qu'en destination dédiée.</p><div class="tagrow"><span class="tag">Centre-ville</span><span class="tag">À vérifier sur place</span></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="transport">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">05 · Arriver</span>
+      <h2>De l'aéroport de Gérone (GRO) à Lloret de Mar</h2>
+      <p>29 km séparent l'aéroport de Gérone-Costa Brava du centre de Lloret. Voici les options classées du moins cher au plus rapide.</p>
+    </div>
+    <div class="card">
+      <div class="route">
+        <div class="route-line"></div>
+        <div class="route-steps">
+          <div class="stop"><div class="pin"></div><strong>Aéroport GRO</strong><br><span style="opacity:.7; font-size:.82rem;">Girona-Costa Brava</span></div>
+          <div class="stop"><div class="pin"></div><strong>Vilobí d'Onyar</strong><br><span style="opacity:.7; font-size:.82rem;">Arrêt intermédiaire du bus</span></div>
+          <div class="stop"><div class="pin"></div><strong>Lloret de Mar</strong><br><span style="opacity:.7; font-size:.82rem;">Gare routière</span></div>
+        </div>
+      </div>
+      <div class="options">
+        <div class="card opt-card"><span class="badge">Le moins cher</span><h3>🚌 Bus direct (ligne 86)</h3><p class="price">6–12 €</p><p>Compagnies Sagalés / Sarfa / Moventis, environ 35 minutes de trajet, plusieurs départs par jour dont un bus de nuit. Achète ton billet en avance pour le meilleur tarif.</p></div>
+        <div class="card opt-card"><h3>🚗 Voiture de location</h3><p class="price">~5–8 €</p><p>Seulement 24 minutes de route et 18 km, en comptant juste le carburant partagé à plusieurs. Le plus flexible si vous êtes en groupe ou en famille.</p></div>
+        <div class="card opt-card"><h3>🚐 Navette partagée</h3><p class="price">dès 10 €</p><p>Porte-à-porte jusqu'à ton hôtel avec quelques arrêts en chemin. Bon compromis confort/prix, à réserver à l'avance.</p></div>
+        <div class="card opt-card"><h3>🚕 Taxi privé</h3><p class="price">70–90 €</p><p>Le plus rapide (24 min) et le plus confortable, mais aussi le plus cher. À réserver pour un vol de nuit ou en dernier recours.</p></div>
+      </div>
+      <p style="margin-top:22px; opacity:.85; font-size:.9rem;">💡 <strong>Astuce économique :</strong> voyager à 3 ou 4 rend le bus imbattable puisque le tarif est individuel — pense aussi à BlaBlaCar si un trajet en covoiturage part au bon horaire.</p>
+    </div>
+  </div>
+</section>
+
+<section id="itineraires">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">06 · Routines</span>
+      <h2>Des journées types déjà prêtes</h2>
+      <p>Trois façons de vivre Lloret selon ton humeur du jour — copie-colle l'une d'elles ou mixe-les.</p>
+    </div>
+    <div class="itin-tabs">
+      <button class="tab-btn active" data-timeline="t-plage">🏖️ Farniente & plage</button>
+      <button class="tab-btn" data-timeline="t-shop">🛍️ Shopping & gastronomie</button>
+      <button class="tab-btn" data-timeline="t-nuit">🌴 Soirée à Lloret</button>
+    </div>
+    <div class="card">
+      <ul class="timeline active" id="t-plage">
+        <li><span class="time">8h30</span><div><h4>Petit-déjeuner en terrasse</h4><p>Café et pastries près de la Plaça Espanya avant l'arrivée des groupes du matin.</p></div></li>
+        <li><span class="time">9h30</span><div><h4>Platja de Lloret de Mar</h4><p>Installe-toi tôt pour avoir le choix des transats, l'eau est calme et claire le matin.</p></div></li>
+        <li><span class="time">13h00</span><div><h4>Déjeuner à Sant Elm Marisqueria</h4><p>Paella ou fruits de mer les pieds presque dans l'eau.</p></div></li>
+        <li><span class="time">15h30</span><div><h4>Marche vers Trons Bay</h4><p>Petite crique sauvage à pied par le chemin côtier, parfaite pour du snorkeling.</p></div></li>
+        <li><span class="time">19h00</span><div><h4>Coucher de soleil au rooftop</h4><p>Un cocktail vue mer avant de rentrer se préparer pour la soirée.</p></div></li>
+      </ul>
+      <ul class="timeline" id="t-shop">
+        <li><span class="time">10h00</span><div><h4>PortaLloret</h4><p>Courses de la semaine et quelques trouvailles à Media Markt.</p></div></li>
+        <li><span class="time">11h30</span><div><h4>Centre piéton</h4><p>Stradivarius et les boutiques de la Carrer de Sant Pere pour la mode.</p></div></li>
+        <li><span class="time">13h30</span><div><h4>Déjeuner à La Terrassa del Bella</h4><p>Tapas sur la Plaça Espanya, en plein cœur de l'animation.</p></div></li>
+        <li><span class="time">16h00</span><div><h4>Souvenirs à Asia Hiper Store</h4><p>Déco et petits cadeaux à ramener, prix doux garantis.</p></div></li>
+        <li><span class="time">20h30</span><div><h4>Dîner à La Brava Steakhouse</h4><p>Réserve à l'avance, le tomahawk part vite le week-end.</p></div></li>
+      </ul>
+      <ul class="timeline" id="t-nuit">
+        <li><span class="time">20h00</span><div><h4>Apéro face au coucher de soleil</h4><p>Une terrasse du Passeig Jacint Verdaguer, ambiance qui monte doucement.</p></div></li>
+        <li><span class="time">21h30</span><div><h4>Dîner rapide et copieux</h4><p>Ca l'Enric pour un plat généreux avant une nuit qui va durer.</p></div></li>
+        <li><span class="time">23h30</span><div><h4>Tournée des bars du centre</h4><p>Le triangle autour de la Carrer de Sant Pere et la Plaça Espanya concentre l'essentiel de l'animation.</p></div></li>
+        <li><span class="time">1h00</span><div><h4>Club en bord de plage</h4><p>Les soirées les plus courues démarrent tard, vers 1h-2h du matin.</p></div></li>
+        <li><span class="time">5h00</span><div><h4>Churros de fin de nuit</h4><p>Un classique avant de rentrer regarder le soleil se lever sur la plage.</p></div></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<section id="astuces">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="kicker">07 · Bons plans</span>
+      <h2>Astuces pour dépenser moins et profiter mieux</h2>
+    </div>
+    <div class="tips-grid">
+      <div class="card tip"><div class="num">01</div><h3>Base-toi dans le centre</h3><p>Loger entre la Plaça Espanya et le port permet de tout faire à pied et d'oublier les taxis en soirée.</p></div>
+      <div class="card tip"><div class="num">02</div><h3>Réserve tes tables tôt</h3><p>Les meilleures adresses comme Sant Elm ou La Parrilla se remplissent vite : un appel dans la journée suffit souvent.</p></div>
+      <div class="card tip"><div class="num">03</div><h3>Évite la terrasse du front de mer</h3><p>Les prix grimpent nettement dès que la table a vue sur la promenade principale — recule d'une rue pour économiser.</p></div>
+      <div class="card tip"><div class="num">04</div><h3>Voyage à plusieurs pour le bus</h3><p>Le tarif de la ligne 86 depuis l'aéroport est individuel : à 3 ou 4, ça reste imbattable face à un taxi.</p></div>
+      <div class="card tip"><div class="num">05</div><h3>Juillet grimpe vite au thermomètre</h3><p>Les après-midis dépassent souvent les 30°C : plage le matin, sieste ou shopping climatisé l'après-midi.</p></div>
+      <div class="card tip"><div class="num">06</div><h3>Les criques valent le détour</h3><p>Trons Bay et les criques voisines sont gratuites, moins fréquentées que la plage principale, et accessibles à pied.</p></div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <p>Fait avec 🌴 pour explorer Lloret de Mar autrement. Les avis et notes proviennent de retours de voyageurs réels — vérifie toujours les horaires et prix avant de réserver.</p>
+  </div>
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+  // TOGGLE JOUR / NUIT
+  const toggle = document.getElementById('dn-toggle');
+  const label = document.getElementById('dn-label');
+  const heroTag = document.getElementById('hero-tag');
+  toggle.addEventListener('click', () => {
+    document.body.classList.toggle('night');
+    const isNight = document.body.classList.contains('night');
+    label.textContent = isNight ? 'Mode nuit' : 'Mode jour';
+    heroTag.textContent = isNight
+      ? '🌙 Lloret s\'éveille : bars, néons et musique jusqu\'au bout de la nuit.'
+      : '☀️ Bascule le switch en haut à droite pour voir Lloret s\'éteindre en mode nuit.';
+  });
+
+  // TABS HOTELS
+  document.querySelectorAll('.tabs').forEach(tabGroup => {
+    tabGroup.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        tabGroup.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const parent = tabGroup.parentElement;
+        parent.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+        document.getElementById(btn.dataset.pane).classList.add('active');
+      });
+    });
+  });
+
+  // TABS ITINERAIRES
+  document.querySelectorAll('.itin-tabs .tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.itin-tabs .tab-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      document.querySelectorAll('.timeline').forEach(t => t.classList.remove('active'));
+      document.getElementById(btn.dataset.timeline).classList.add('active');
+    });
+  });
+
+  // MAP
+  const map = L.map('map', {scrollWheelZoom:false}).setView([41.6997, 2.8460], 15);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    attribution:'&copy; OpenStreetMap',
+    maxZoom:19
+  }).addTo(map);
+
+  function makeIcon(color){
+    return L.divIcon({
+      className:'',
+      html:`<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2px solid #fff;box-shadow:0 0 8px rgba(0,0,0,.5);"></div>`,
+      iconSize:[16,16], iconAnchor:[8,8]
+    });
+  }
+  const icons = {
+    hotelTop: makeIcon('#ffbd5c'),
+    hotelCheap: makeIcon('#5be0c5'),
+    resto: makeIcon('#ff6fa1'),
+    shop: makeIcon('#8e7bff'),
+    beach: makeIcon('#4fb0ff')
+  };
+
+  function addPoint(lat,lng,icon,name,rating,note){
+    L.marker([lat,lng], {icon}).addTo(map)
+      .bindPopup(`<div class="popup-title">${name}</div>${rating ? `<div class="popup-rating">★ ${rating}</div>` : ''}<div style="font-size:.82rem;opacity:.85;margin-top:4px;">${note}</div>`);
+  }
+
+  // Hôtels haut de gamme
+  addPoint(41.6987471,2.8440037, icons.hotelTop, "Hotel Delamar", "4.7", "Rooftop 3 piscines, adults only");
+  addPoint(41.6950083,2.8332373, icons.hotelTop, "Rigat Park & Spa", "4.4", "Sur la plage de Fenals");
+  addPoint(41.701845,2.841993, icons.hotelTop, "L'Azure Hotel", "4.6", "Spa, service haut de gamme");
+  addPoint(41.7015325,2.8440005, icons.hotelTop, "The 15th Boutique Hotel", "4.5", "Ambiance bohème, central");
+  addPoint(41.6895298,2.8181631, icons.hotelTop, "Santa Marta Hotel", "4.4", "5★ en bord de mer, Santa Cristina");
+  addPoint(41.698829,2.846175, icons.hotelTop, "Belladora Hotel Boutique", "5.0", "Petit hôtel récent et soigné");
+
+  // Hôtels petit budget
+  addPoint(41.7003121,2.8324463, icons.hotelCheap, "Hotel htop Palm Beach & Spa", "3.5", "All inclusive petit prix");
+  addPoint(41.700727,2.8469806, icons.hotelCheap, "Loft Hostal", "3.6", "Le moins cher du centre");
+  addPoint(41.7133106,2.8310867, icons.hotelCheap, "Hotel Julimar", "4.3", "Très bon rapport qualité-prix");
+  addPoint(41.6984277,2.826544, icons.hotelCheap, "Camping Nice Camps", "3.9", "Bungalows et emplacements");
+
+  // Restaurants
+  addPoint(41.6994367,2.8495427, icons.resto, "Sant Elm Marisqueria", "4.8", "Fruits de mer face à la mer");
+  addPoint(41.7024542,2.8515134, icons.resto, "Al Freskito", "4.7", "Tapas créatives, bon rapport qualité-prix");
+  addPoint(41.699308,2.847594, icons.resto, "La Parrilla", "4.7", "Grillades locales, réservation conseillée");
+  addPoint(41.6985431,2.8463006, icons.resto, "La Terrassa del Bella", "4.7", "Tapas sur la Plaça Espanya");
+  addPoint(41.7026389,2.8495222, icons.resto, "Ca l'Enric", "4.6", "Portions généreuses, prix serré");
+  addPoint(41.700769,2.8461593, icons.resto, "La Brava Steakhouse", "4.6", "Le spot pour un vrai steak");
+
+  // Shopping
+  addPoint(41.7049995,2.8345883, icons.shop, "Centre commercial PortaLloret", "4.1", "Supermarché, Media Markt, mode");
+  addPoint(41.7000518,2.8465616, icons.shop, "Stradivarius", "4.2", "Mode femme, centre piéton");
+  addPoint(41.7052722,2.8341634, icons.shop, "Asia Hiper Store", "4.1", "Bazar, souvenirs pas chers");
+  addPoint(41.6989647,2.8474774, icons.shop, "Noir et Blanc Compléments", "4.1", "Maroquinerie en cuir");
+  addPoint(41.6976521,2.8446627, icons.shop, "Carabela Shopping Centre", "3.7", "Centre-ville, à vérifier sur place");
+
+  // Plages
+  addPoint(41.6990722,2.8506776, icons.beach, "Platja de Lloret de Mar", "4.4", "La plage principale, propre et animée");
+  addPoint(41.6995020,2.864754, icons.beach, "Trons Bay", "4.6", "Crique sauvage, idéale pour le snorkeling");
+</script>
+</body>
+</html>
